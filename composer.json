@@ -1,0 +1,14 @@
+{
+    "name": "xcentric/xcentric-entity-hydrator",
+    "description": "Entity hydrator component for sf4 and doctrine",
+    "type": "symfony-bundle",
+    "keywords": ["Symfony", "bundle", "entity hydrator"],
+    "homepage": "https://github.com/bosske1/xcentric-entity-hydrator",
+    "license": "MIT",
+    "require": {
+        "php": "^7.1",
+	"doctrine/doctrine-bundle": "^1.6",
+        "doctrine/orm": "^2.5",
+	"symfony/dependency-injection": "^4.0"
+    }
+}

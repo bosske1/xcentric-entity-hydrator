@@ -102,7 +102,7 @@ class Factory implements FactoryInterface
         /**
          * @var ValueParserInterface $valueParser
          */
-        $valueParser = $this->container->get(self::PARSER_PREFIX . 'embedded');
+        $valueParser = $this->container->get(self::PARSER_PREFIX . 'collection');
 	    $valueParser->setFqn($oneToManyAnnotation->targetEntity);
 
 	    return $valueParser;

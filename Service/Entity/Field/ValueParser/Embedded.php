@@ -17,17 +17,17 @@ class Embedded implements ValueParserInterface
     /**
      * @var EntityManagerInterface $entityManager
      */
-    private $entityManager;
+    protected $entityManager;
 
     /**
      * @var HydratorInterface $hydrator
      */
-    private $hydrator;
+    protected $hydrator;
 
     /**
      * @var string
      */
-    private $fqn;
+    protected $fqn;
 
     public function __construct(EntityManagerInterface $entityManager, HydratorInterface $hydrator)
     {
@@ -47,8 +47,8 @@ class Embedded implements ValueParserInterface
             throw new MissingFqnException('Entity fqn is missing');
         }
 
-        return !empty($rawValue['id']) ? $this->entityManager->find($this->fqn, $rawValue['id'])
-            : $this->insertNewEmbeddedEntity($rawValue, $this->fqn);
+        return !empty($rawValue['id']) ? $this->handleUpdatedEmbeddedEntity($rawValue, $this->fqn)
+            : $this->handleNewEmbeddedEntity($rawValue, $this->fqn);
     }
 
     public function setFqn(string $entityFQN): ValueParserInterface
@@ -58,6 +58,17 @@ class Embedded implements ValueParserInterface
         return $this;
     }
 
+    protected function handleUpdatedEmbeddedEntity(array $rawValues, string $entityFqn)
+    {
+        $updatedEntity = $this->entityManager->find($entityFqn, $rawValues['id']);
+
+        if ($rawValues['isChanged']) {
+            $this->hydrator->hydrate($updatedEntity, $rawValues);
+        }
+
+        return $updatedEntity;
+    }
+
 	/**
 	 * @param array $rawValues
 	 * @param string $entityFqn
@@ -65,21 +76,10 @@ class Embedded implements ValueParserInterface
 	 * @return HydratableEntityInterface|array
 	 * @throws \ReflectionException
 	 */
-    private function insertNewEmbeddedEntity(array $rawValues, string $entityFqn)
+    protected function handleNewEmbeddedEntity(array $rawValues, string $entityFqn)
     {
 	    if (empty($rawValues)) {
 		    return null;
-	    }
-
-	    if (isset($rawValues[0])) {
-		    //array of arrays
-		    $newarray = array();
-
-		    foreach ($rawValues as $value) {
-		    	$newarray[] = $this->insertNewEmbeddedEntity($value, $entityFqn);
-		    }
-
-			return $newarray;
 	    }
 
         $newEntity = new $entityFqn();

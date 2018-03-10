@@ -11,5 +11,7 @@ interface HydratableEntityInterface
     /**
      * @return int
      */
-    public function getId();
+    public function getId(): ?int;
+
+    public function isChanged(): bool;
 }

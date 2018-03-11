@@ -58,25 +58,34 @@ class Embedded implements ValueParserInterface
         return $this;
     }
 
-    protected function handleUpdatedEmbeddedEntity(array $rawValues, string $entityFqn)
+    /**
+     * @param array $rawValues
+     * @param string $entityFqn
+     * @return HydratableEntityInterface
+     * @throws \ReflectionException
+     */
+    protected function handleUpdatedEmbeddedEntity(array $rawValues, string $entityFqn): ?HydratableEntityInterface
     {
+        /**
+         * @var HydratableEntityInterface $updatedEntity
+         */
         $updatedEntity = $this->entityManager->find($entityFqn, $rawValues['id']);
 
         if ($rawValues['isChanged']) {
             $this->hydrator->hydrate($updatedEntity, $rawValues);
+            $this->entityManager->persist($updatedEntity);
         }
 
         return $updatedEntity;
     }
 
-	/**
-	 * @param array $rawValues
-	 * @param string $entityFqn
-	 *
-	 * @return HydratableEntityInterface|array
-	 * @throws \ReflectionException
-	 */
-    protected function handleNewEmbeddedEntity(array $rawValues, string $entityFqn)
+    /**
+     * @param array $rawValues
+     * @param string $entityFqn
+     * @return HydratableEntityInterface
+     * @throws \ReflectionException
+     */
+    protected function handleNewEmbeddedEntity(array $rawValues, string $entityFqn): ?HydratableEntityInterface
     {
 	    if (empty($rawValues)) {
 		    return null;

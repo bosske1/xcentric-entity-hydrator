@@ -71,7 +71,7 @@ class Embedded implements ValueParserInterface
          */
         $updatedEntity = $this->entityManager->find($entityFqn, $rawValues['id']);
 
-        if ($rawValues['isChanged']) {
+        if (isset($rawValues['isChanged']) && $rawValues['isChanged']) {
             $this->hydrator->hydrate($updatedEntity, $rawValues);
             $this->entityManager->persist($updatedEntity);
         }

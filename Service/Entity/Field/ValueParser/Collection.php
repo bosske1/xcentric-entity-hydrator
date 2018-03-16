@@ -20,10 +20,12 @@ class Collection extends Embedded
             throw new MissingFqnException('Entity fqn is missing');
         }
 
-        foreach ($rawValue as $dataRow) {
-            $createdEmbeddedEntity = !empty($dataRow['id']) ? $this->handleUpdatedEmbeddedEntity($dataRow, $this->fqn)
-                : $this->handleNewEmbeddedEntity($dataRow, $this->fqn);
-            $objects->add($createdEmbeddedEntity);
+        if (!empty($rawValue)) {
+            foreach ($rawValue as $dataRow) {
+                $createdEmbeddedEntity = !empty($dataRow['id']) ? $this->handleUpdatedEmbeddedEntity($dataRow, $this->fqn)
+                    : $this->handleNewEmbeddedEntity($dataRow, $this->fqn);
+                $objects->add($createdEmbeddedEntity);
+            }
         }
 
         return $objects;

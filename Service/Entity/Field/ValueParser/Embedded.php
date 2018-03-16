@@ -64,7 +64,7 @@ class Embedded implements ValueParserInterface
      * @return HydratableEntityInterface
      * @throws \ReflectionException
      */
-    protected function handleUpdatedEmbeddedEntity(array $rawValues, string $entityFqn): ?HydratableEntityInterface
+    protected function handleUpdatedEmbeddedEntity(?array $rawValues, string $entityFqn): ?HydratableEntityInterface
     {
         /**
          * @var HydratableEntityInterface $updatedEntity
@@ -85,7 +85,7 @@ class Embedded implements ValueParserInterface
      * @return HydratableEntityInterface
      * @throws \ReflectionException
      */
-    protected function handleNewEmbeddedEntity(array $rawValues, string $entityFqn): ?HydratableEntityInterface
+    protected function handleNewEmbeddedEntity(?array $rawValues, string $entityFqn): ?HydratableEntityInterface
     {
 	    if (empty($rawValues)) {
 		    return null;

@@ -104,7 +104,7 @@ class Hydrator implements HydratorInterface
     {
         $setterName = 'set' . ucfirst($propertyName);
         if (!$reflectionClass->hasMethod($setterName)) {
-            throw new MissingPropertyException("Property $propertyName not found in class ".$reflectionClass->getName());
+            return false; // throw new MissingPropertyException("Property $propertyName not found in class ".$reflectionClass->getName());
         }
 
         return !in_array($propertyName, $this->skip) && !in_array($propertyName, $this->skipNull);

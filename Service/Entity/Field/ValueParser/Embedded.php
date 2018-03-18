@@ -47,8 +47,11 @@ class Embedded implements ValueParserInterface
             throw new MissingFqnException('Entity fqn is missing');
         }
 
-        return !empty($rawValue['id']) ? $this->handleUpdatedEmbeddedEntity($rawValue, $this->fqn)
-            : $this->handleNewEmbeddedEntity($rawValue, $this->fqn);
+        return (is_numeric($rawValue))
+            ? $this->handleUnchanged($rawValue, $this->fqn) :
+            (!empty($rawValue['id'])
+                ? $this->handleUpdatedEmbeddedEntity($rawValue, $this->fqn) :
+                $this->handleNewEmbeddedEntity($rawValue, $this->fqn));
     }
 
     public function setFqn(string $entityFQN): ValueParserInterface
@@ -56,6 +59,16 @@ class Embedded implements ValueParserInterface
         $this->fqn = $entityFQN;
 
         return $this;
+    }
+
+    protected function handleUnchanged(int $id, string $entityFqn): ?HydratableEntityInterface
+    {
+        /**
+         * @var HydratableEntityInterface $entity
+         */
+        $entity = $this->entityManager->find($entityFqn, $id);
+
+        return $entity;
     }
 
     /**
@@ -87,9 +100,9 @@ class Embedded implements ValueParserInterface
      */
     protected function handleNewEmbeddedEntity(?array $rawValues, string $entityFqn): ?HydratableEntityInterface
     {
-	    if (empty($rawValues)) {
-		    return null;
-	    }
+        if (empty($rawValues)) {
+            return null;
+        }
 
         $newEntity = new $entityFqn();
 

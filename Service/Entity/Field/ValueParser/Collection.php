@@ -6,7 +6,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 class Collection extends Embedded
 {
-
     /**
      * @param $rawValue
      * @return mixed|object
@@ -22,8 +21,9 @@ class Collection extends Embedded
 
         if (!empty($rawValue)) {
             foreach ($rawValue as $dataRow) {
-                $createdEmbeddedEntity = !empty($dataRow['id']) ? $this->handleUpdatedEmbeddedEntity($dataRow, $this->fqn)
-                    : $this->handleNewEmbeddedEntity($dataRow, $this->fqn);
+                $createdEmbeddedEntity = is_numeric($dataRow) ? $this->handleUnchanged($dataRow, $this->fqn)
+                    : (!empty($dataRow['id']) ? $this->handleUpdatedEmbeddedEntity($dataRow, $this->fqn)
+                        : $this->handleNewEmbeddedEntity($dataRow, $this->fqn));
                 $objects->add($createdEmbeddedEntity);
             }
         }

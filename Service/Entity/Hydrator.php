@@ -148,7 +148,7 @@ class Hydrator implements HydratorInterface
 		return array();
     }
 
-    private function checkUnattached(string $propertyName, array $values): bool
+    private function checkUnattached(string $propertyName, $values): bool
     {
         if (in_array($propertyName, $this->skip) || in_array($propertyName, $this->skipNull)) {
             return false;

@@ -3,6 +3,7 @@
 namespace Xcentric\EntityHydratorBundle\Service\Entity\Field;
 
 use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -44,13 +45,14 @@ class Factory implements FactoryInterface
             return $this->spawnByColumnAnnotation($columnAnnotation);
         }
 
-        $manyToOneAnnotation = $this->findAnnotation($propertyAnnotations, ManyToOne::class);
+        $manyToOneAnnotation = self::findAnnotation($propertyAnnotations, ManyToOne::class);
+        $manyToManyAnnotation = self::findAnnotation($propertyAnnotations, ManyToMany::class);
 
-        if ($manyToOneAnnotation) {
+        if ($manyToOneAnnotation || $manyToManyAnnotation) {
             return $this->spawnByManyToOne($manyToOneAnnotation);
         }
 
-	    $oneToManyAnnotation = $this->findAnnotation($propertyAnnotations, OneToMany::class);
+	    $oneToManyAnnotation = self::findAnnotation($propertyAnnotations, OneToMany::class);
 
 	    if ($oneToManyAnnotation) {
 		    return $this->spawnByOneToMany($oneToManyAnnotation);

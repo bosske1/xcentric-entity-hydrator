@@ -23,7 +23,7 @@ class Unattached extends AbstractObjectParser
         $this->figureOutFqn($rawValue);
 
         if (!$this->fqn) {
-            throw new MissingFqnException('Entity fqn is missing');
+            return false;// throw new MissingFqnException('Entity fqn is missing');
         }
 
         if (isset($rawValue[Enum::ENTITY_FQN_FLAG])) {

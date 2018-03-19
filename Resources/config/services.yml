@@ -37,3 +37,7 @@ services:
     xcentric.entity_hydrator.parser.collection:
         class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Collection
         arguments: ["@doctrine.orm.entity_manager.abstract", "@xcentric.entity_hydrator.hydrator"]
+
+    xcentric.entity_hydrator.parser.unattached:
+        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Unattached
+        arguments: ["@doctrine.orm.entity_manager.abstract", "@xcentric.entity_hydrator.hydrator"]

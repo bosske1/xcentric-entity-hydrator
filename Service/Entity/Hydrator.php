@@ -63,6 +63,8 @@ class Hydrator implements HydratorInterface
             if ($this->checkProperty($reflectionClass, $property)) {
                 $value = $this->parseValue($reflectionClass, $property, $rawValue);
                 $this->setValue($entity, $property, $value);
+            } elseif ($this->checkUnattached($property, $rawValue)) {
+                $this->parseValue($reflectionClass, $property, $rawValue);
             }
         }
 
@@ -144,6 +146,15 @@ class Hydrator implements HydratorInterface
 		} catch (\ReflectionException $re) {
 		}
 		return array();
+    }
+
+    private function checkUnattached(string $propertyName, array $values): bool
+    {
+        if (in_array($propertyName, $this->skip) || in_array($propertyName, $this->skipNull)) {
+            return false;
+        }
+
+        return is_array($values) && (isset($values[Enum::ENTITY_FQN_FLAG]) || isset($values[0][Enum::ENTITY_FQN_FLAG]));
     }
 
 }

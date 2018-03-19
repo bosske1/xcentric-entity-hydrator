@@ -32,8 +32,12 @@ class Factory implements FactoryInterface
      * @param array $propertyAnnotations
      * @return ValueParserInterface
      */
-    public function spawn(array $propertyAnnotations): ?ValueParserInterface
+    public function spawn(?array $propertyAnnotations): ?ValueParserInterface
     {
+        if (empty($propertyAnnotations)) {
+            return $this->spawnUnattached();
+        }
+
         $columnAnnotation = $this->findAnnotation($propertyAnnotations, Column::class);
 
         if ($columnAnnotation) {
@@ -66,6 +70,14 @@ class Factory implements FactoryInterface
         }
 
         return null;
+    }
+
+    /**
+     * @return ValueParserInterface
+     */
+    private function spawnUnattached(): ValueParserInterface
+    {
+        return $this->container->get(self::PARSER_PREFIX . 'unattached');
     }
 
     /**

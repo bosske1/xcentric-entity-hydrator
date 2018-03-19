@@ -12,5 +12,5 @@ interface FactoryInterface
      * @param array $propertyAnnotations
      * @return ValueParserInterface
      */
-    public function spawn(array $propertyAnnotations): ?ValueParserInterface;
+    public function spawn(?array $propertyAnnotations): ?ValueParserInterface;
 }

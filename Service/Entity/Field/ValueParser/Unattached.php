@@ -62,5 +62,7 @@ class Unattached extends AbstractObjectParser
         } elseif (isset($values[0][Enum::ENTITY_FQN_FLAG])) {
             $this->fqn = $values[0][Enum::ENTITY_FQN_FLAG];
         }
+
+        return $this;
     }
 }

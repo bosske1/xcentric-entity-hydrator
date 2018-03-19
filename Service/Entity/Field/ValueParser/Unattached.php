@@ -20,6 +20,10 @@ class Unattached extends AbstractObjectParser
      */
     public function parse($rawValue)
     {
+        if (!is_array($rawValue)) {
+            return false;
+        }
+        
         $this->figureOutFqn($rawValue);
 
         if (!$this->fqn) {

@@ -4,6 +4,7 @@ namespace Xcentric\EntityHydratorBundle\Service\Entity;
 
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
 use Xcentric\EntityHydratorBundle\Service\Entity\Field\FactoryInterface;
@@ -62,7 +63,7 @@ class Hydrator implements HydratorInterface
         foreach ($data as $property => $rawValue) {
             if ($this->checkProperty($reflectionClass, $property)) {
                 $value = $this->parseValue($reflectionClass, $property, $rawValue);
-                $this->setValue($entity, $property, $value);
+                $this->setValue($reflectionClass, $entity, $property, $value);
             } elseif ($this->checkUnattached($property, $rawValue)) {
                 $this->parseValue($reflectionClass, $property, $rawValue);
             }
@@ -128,11 +129,38 @@ class Hydrator implements HydratorInterface
         return $rawValue;
     }
 
-    private function setValue(HydratableEntityInterface $entity, string $propertyName, $value)
+    private function setValue(\ReflectionClass $reflectionClass, HydratableEntityInterface $entity, string $propertyName, $value)
+    {
+        $setterName = 'set' . ucfirst($propertyName);
+        $getterName = 'get' . ucfirst($propertyName);
+
+        if ($reflectionClass->hasMethod($getterName) && $value instanceof Collection) {
+            $this->setValueCollection($reflectionClass, $entity, $propertyName, $value);
+        } else {
+            $this->setValueSimple($entity, $propertyName, $value);
+        }
+    }
+
+    private function setValueSimple(HydratableEntityInterface $entity, string $propertyName, $value)
     {
         $setterName = 'set' . ucfirst($propertyName);
 
         $entity->{$setterName}($value);
+    }
+
+    private function setValueCollection(\ReflectionClass $reflectionClass, HydratableEntityInterface $entity, string $propertyName, $value)
+    {
+        $getterName = 'get' . ucfirst($propertyName);
+
+        if ($reflectionClass->hasMethod($getterName)) {
+            $collection = $entity->{$getterName}();
+
+            if ($collection instanceof Collection) {
+                foreach ($value as $item) {
+                    $collection->add($item);
+                }
+            }
+        }
     }
 
     private function getColumnAnnotations(\ReflectionClass $reflectionClass, string $propertyName): array

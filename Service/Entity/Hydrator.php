@@ -62,10 +62,10 @@ class Hydrator implements HydratorInterface
 
         foreach ($data as $property => $rawValue) {
             if ($this->checkProperty($reflectionClass, $property)) {
-                $value = $this->parseValue($reflectionClass, $property, $rawValue);
+                $value = $this->parseValue($reflectionClass, $property, $rawValue, $entity);
                 $this->setValue($reflectionClass, $entity, $property, $value);
             } elseif ($this->checkUnattached($property, $rawValue)) {
-                $this->parseValue($reflectionClass, $property, $rawValue);
+                $this->parseValue($reflectionClass, $property, $rawValue, $entity);
             }
         }
 
@@ -113,14 +113,12 @@ class Hydrator implements HydratorInterface
         return !in_array($propertyName, $this->skip) && !in_array($propertyName, $this->skipNull);
     }
 
-    private function parseValue(\ReflectionClass $reflectionClass, string $propertyName, $rawValue)
+    private function parseValue(\ReflectionClass $reflectionClass, string $propertyName, $rawValue, HydratableEntityInterface $entity)
     {
-        $annotations = $this->getColumnAnnotations($reflectionClass, $propertyName);
-
         /**
          * @var ValueParserInterface $valueParser
          */
-        $valueParser = $this->valueParserFactory->spawn($annotations);
+        $valueParser = $this->valueParserFactory->spawn($reflectionClass, $entity, $propertyName);
 
         if ($valueParser) {
             return $valueParser->parse($rawValue);
@@ -131,7 +129,6 @@ class Hydrator implements HydratorInterface
 
     private function setValue(\ReflectionClass $reflectionClass, HydratableEntityInterface $entity, string $propertyName, $value)
     {
-        $setterName = 'set' . ucfirst($propertyName);
         $getterName = 'get' . ucfirst($propertyName);
 
         if ($reflectionClass->hasMethod($getterName) && $value instanceof Collection) {
@@ -161,19 +158,6 @@ class Hydrator implements HydratorInterface
                 }
             }
         }
-    }
-
-    private function getColumnAnnotations(\ReflectionClass $reflectionClass, string $propertyName): array
-    {
-    	try {
-    		$annotationReader = new AnnotationReader();
-    		$reflectionProperty = new \ReflectionProperty($reflectionClass->getName(), $propertyName);
-
-			return $annotationReader->getPropertyAnnotations($reflectionProperty);
-		} catch (AnnotationException $ae) {
-		} catch (\ReflectionException $re) {
-		}
-		return array();
     }
 
     private function checkUnattached(string $propertyName, $values): bool

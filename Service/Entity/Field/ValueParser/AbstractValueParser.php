@@ -2,6 +2,8 @@
 
 namespace Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser;
 
+use Doctrine\ORM\Mapping\Annotation;
+use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
 use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParserInterface;
 
 /**
@@ -16,6 +18,16 @@ abstract class AbstractValueParser implements ValueParserInterface
     protected $fqn;
 
     /**
+     * @var HydratableEntityInterface
+     */
+    protected $entity;
+
+    /**
+     * @var Annotation
+     */
+    protected $annotation;
+
+    /**
      * @param string $entityFQN
      * @return ValueParserInterface
      */
@@ -25,4 +37,25 @@ abstract class AbstractValueParser implements ValueParserInterface
 
         return $this;
     }
+
+    /**
+     * @param HydratableEntityInterface $entity
+     * @return ValueParserInterface
+     */
+    public function setEntity(HydratableEntityInterface $entity): ValueParserInterface
+    {
+        $this->entity = $entity;
+        return $this;
+    }
+
+    /**
+     * @param Annotation $annotation
+     * @return ValueParserInterface
+     */
+    public function setAnnotation(Annotation $annotation): ValueParserInterface
+    {
+        $this->annotation = $annotation;
+        return $this;
+    }
+
 }

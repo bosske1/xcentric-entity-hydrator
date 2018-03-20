@@ -2,11 +2,14 @@
 
 namespace Xcentric\EntityHydratorBundle\Service\Entity\Field;
 
+use Doctrine\Common\Annotations\AnnotationException;
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
 
 /**
  * Class Factory
@@ -30,37 +33,48 @@ class Factory implements FactoryInterface
     }
 
     /**
-     * @param array $propertyAnnotations
-     * @return ValueParserInterface
+     * @param \ReflectionClass $reflectionClass
+     * @param HydratableEntityInterface $entity
+     * @param string $propertyName
+     * @return null|ValueParserInterface
+     * @throws \ReflectionException
      */
-    public function spawn(?array $propertyAnnotations): ?ValueParserInterface
+    public function spawn(\ReflectionClass $reflectionClass, HydratableEntityInterface $entity, string $propertyName): ?ValueParserInterface
     {
+        $propertyAnnotations = $this->getColumnAnnotations($reflectionClass, $propertyName);
+
         if (empty($propertyAnnotations)) {
-            return $this->spawnUnattached();
+            return $this->spawnUnattached($entity);
         }
 
         $columnAnnotation = $this->findAnnotation($propertyAnnotations, Column::class);
 
         if ($columnAnnotation) {
-            return $this->spawnByColumnAnnotation($columnAnnotation);
+            return $this->spawnByColumnAnnotation($columnAnnotation, $entity);
         }
 
         $manyToOneAnnotation = self::findAnnotation($propertyAnnotations, ManyToOne::class);
         $manyToManyAnnotation = self::findAnnotation($propertyAnnotations, ManyToMany::class);
 
         if ($manyToOneAnnotation || $manyToManyAnnotation) {
-            return $this->spawnByManyToOne($manyToOneAnnotation);
+            return $this->spawnByManyToOne($manyToOneAnnotation, $entity);
         }
 
 	    $oneToManyAnnotation = self::findAnnotation($propertyAnnotations, OneToMany::class);
 
 	    if ($oneToManyAnnotation) {
-		    return $this->spawnByOneToMany($oneToManyAnnotation);
+		    return $this->spawnByOneToMany($oneToManyAnnotation, $entity);
 	    }
 
 	    return null;
     }
 
+    /**
+     * @param array $propertyAnnotations
+     * @param string $annotationName
+     * @return mixed|null
+     * @throws \ReflectionException
+     */
     public static function findAnnotation(array $propertyAnnotations, string $annotationName)
     {
         foreach ($propertyAnnotations as $propertyAnnotation) {
@@ -77,16 +91,22 @@ class Factory implements FactoryInterface
     /**
      * @return ValueParserInterface
      */
-    private function spawnUnattached(): ValueParserInterface
+    private function spawnUnattached(HydratableEntityInterface $entity): ValueParserInterface
     {
-        return $this->container->get(self::PARSER_PREFIX . 'unattached');
+        /**
+         * @var ValueParserInterface $valueParser
+         */
+        $valueParser = $this->container->get(self::PARSER_PREFIX . 'unattached');
+        $valueParser->setEntity($entity);
+
+        return $valueParser;
     }
 
     /**
      * @param Column $columnAnnotation
      * @return null|ValueParserInterface
      */
-    private function spawnByColumnAnnotation(Column $columnAnnotation): ?ValueParserInterface
+    private function spawnByColumnAnnotation(Column $columnAnnotation, HydratableEntityInterface $entity): ?ValueParserInterface
     {
 
         $parserClass = self::PARSER_PREFIX . $columnAnnotation->type;
@@ -97,28 +117,63 @@ class Factory implements FactoryInterface
         $valueParser = $this->container->has($parserClass) ? $this->container->get($parserClass)
             : $this->container->get(self::PARSER_PREFIX . 'generic');
 
+        $valueParser->setEntity($entity);
+        $valueParser->setAnnotation($columnAnnotation);
+
         return $valueParser;
     }
 
-    private function spawnByManyToOne(ManyToOne $manyToOneAnnotation): ?ValueParserInterface
+    /**
+     * @param ManyToOne $manyToOneAnnotation
+     * @param HydratableEntityInterface $entity
+     * @return null|ValueParserInterface
+     */
+    private function spawnByManyToOne(ManyToOne $manyToOneAnnotation, HydratableEntityInterface $entity): ?ValueParserInterface
     {
         /**
          * @var ValueParserInterface $valueParser
          */
         $valueParser = $this->container->get(self::PARSER_PREFIX . 'embedded');
         $valueParser->setFqn($manyToOneAnnotation->targetEntity);
+        $valueParser->setEntity($entity);
+        $valueParser->setAnnotation($manyToOneAnnotation);
 
         return $valueParser;
     }
 
-    private function spawnByOneToMany(OneToMany $oneToManyAnnotation): ?ValueParserInterface
+    /**
+     * @param OneToMany $oneToManyAnnotation
+     * @param HydratableEntityInterface $entity
+     * @return null|ValueParserInterface
+     */
+    private function spawnByOneToMany(OneToMany $oneToManyAnnotation, HydratableEntityInterface $entity): ?ValueParserInterface
     {
         /**
          * @var ValueParserInterface $valueParser
          */
         $valueParser = $this->container->get(self::PARSER_PREFIX . 'collection');
 	    $valueParser->setFqn($oneToManyAnnotation->targetEntity);
+        $valueParser->setEntity($entity);
+        $valueParser->setAnnotation($oneToManyAnnotation);
 
 	    return $valueParser;
+    }
+
+    /**
+     * @param \ReflectionClass $reflectionClass
+     * @param string $propertyName
+     * @return array
+     */
+    private function getColumnAnnotations(\ReflectionClass $reflectionClass, string $propertyName): array
+    {
+        try {
+            $annotationReader = new AnnotationReader();
+            $reflectionProperty = new \ReflectionProperty($reflectionClass->getName(), $propertyName);
+
+            return $annotationReader->getPropertyAnnotations($reflectionProperty);
+        } catch (AnnotationException $ae) {
+        } catch (\ReflectionException $re) {
+        }
+        return array();
     }
 }

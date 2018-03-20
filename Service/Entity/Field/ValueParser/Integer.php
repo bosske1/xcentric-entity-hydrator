@@ -14,6 +14,6 @@ class Integer extends AbstractValueParser
      */
     public function parse($rawValue)
     {
-        return (int)$rawValue;
+        return ($rawValue !== null) ? (int)$rawValue : null;
     }
 }

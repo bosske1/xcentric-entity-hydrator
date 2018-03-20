@@ -10,6 +10,6 @@ class Datetime extends AbstractValueParser
 {
     public function parse($rawValue)
     {
-        return new \DateTime($rawValue);
+        return ($rawValue) ? new \DateTime($rawValue) : null;
     }
 }

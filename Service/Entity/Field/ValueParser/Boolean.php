@@ -14,6 +14,6 @@ class Boolean extends AbstractValueParser
      */
     public function parse($rawValue)
     {
-        return (bool)$rawValue;
+        return ($rawValue !== null) ? (bool)$rawValue : null;
     }
 }

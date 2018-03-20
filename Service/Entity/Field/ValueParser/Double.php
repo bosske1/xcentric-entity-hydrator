@@ -14,6 +14,6 @@ class Double extends AbstractValueParser
      */
     public function parse($rawValue)
     {
-        return (float)$rawValue;
+        return ($rawValue !== null) ? (float)$rawValue : null;
     }
 }

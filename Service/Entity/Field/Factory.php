@@ -60,6 +60,11 @@ class Factory implements FactoryInterface
             return $this->spawnByManyToOne($manyToOneAnnotation, $entity);
         }
 
+        if ($manyToManyAnnotation) {
+            // Same shit:
+            return $this->spawnByManyToOne($manyToManyAnnotation, $entity);
+        }
+
 	    $oneToManyAnnotation = self::findAnnotation($propertyAnnotations, OneToMany::class);
 
 	    if ($oneToManyAnnotation) {

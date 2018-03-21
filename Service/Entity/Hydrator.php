@@ -24,6 +24,11 @@ class Hydrator implements HydratorInterface
     private $valueParserFactory;
 
     /**
+     * @var array
+     */
+    private $entityModifiers = [];
+
+    /**
      *
      * Array of properties to be skipped.
      *
@@ -59,6 +64,8 @@ class Hydrator implements HydratorInterface
     public function hydrate(HydratableEntityInterface $entity, array $data): HydratableEntityInterface
     {
         $reflectionClass = new \ReflectionClass($entity);
+
+        $this->runModifiers($entity, $data);
 
         foreach ($data as $property => $rawValue) {
             if ($this->checkProperty($reflectionClass, $property)) {
@@ -96,6 +103,28 @@ class Hydrator implements HydratorInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @param EntityModifierInterface $entityModifier
+     * @return HydratorInterface
+     */
+    public function registerEntityModifier(EntityModifierInterface $entityModifier): HydratorInterface
+    {
+        $this->entityModifiers[] = $entityModifier;
+        return $this;
+    }
+
+    private function runModifiers(HydratableEntityInterface $entity, array $data)
+    {
+        /**
+         * @var EntityModifierInterface $entityModifier
+         */
+        foreach ($this->entityModifiers as $entityModifier) {
+            if ($entityModifier->isApplicable($entity, $data)) {
+                $entityModifier->modify($entity, $data);
+            }
+        }
     }
 
     /**

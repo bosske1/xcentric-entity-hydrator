@@ -25,4 +25,10 @@ interface HydratorInterface
      * @return HydratorInterface
      */
     public function addSkipNullProperty(string $propertyName): HydratorInterface;
+
+    /**
+     * @param EntityModifierInterface $entityModifier
+     * @return HydratorInterface
+     */
+    public function registerEntityModifier(EntityModifierInterface $entityModifier): HydratorInterface;
 }

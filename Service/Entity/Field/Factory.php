@@ -129,19 +129,19 @@ class Factory implements FactoryInterface
     }
 
     /**
-     * @param ManyToOne $manyToOneAnnotation
+     * @param Annotation $annotation
      * @param HydratableEntityInterface $entity
      * @return null|ValueParserInterface
      */
-    private function spawnByManyToOne(ManyToOne $manyToOneAnnotation, HydratableEntityInterface $entity): ?ValueParserInterface
+    private function spawnByManyToOne(Annotation $annotation, HydratableEntityInterface $entity): ?ValueParserInterface
     {
         /**
          * @var ValueParserInterface $valueParser
          */
         $valueParser = $this->container->get(self::PARSER_PREFIX . 'embedded');
-        $valueParser->setFqn($manyToOneAnnotation->targetEntity);
+        $valueParser->setFqn($annotation->targetEntity);
         $valueParser->setEntity($entity);
-        $valueParser->setAnnotation($manyToOneAnnotation);
+        $valueParser->setAnnotation($annotation);
 
         return $valueParser;
     }

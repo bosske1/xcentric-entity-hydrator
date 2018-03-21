@@ -15,7 +15,7 @@ interface EntityModifierInterface
      * @param array $data
      * @return array
      */
-    public function modify(HydratableEntityInterface $entity, array $data): array;
+    public function modify(HydratableEntityInterface $entity, array $data);
 
     /**
      * @param HydratableEntityInterface $entity

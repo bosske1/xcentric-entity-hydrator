@@ -23,6 +23,10 @@ class Embedded extends AbstractObjectParser
             throw new MissingFqnException('Entity fqn is missing');
         }
 
+        if (empty($rawValue)) {
+            return null;
+        }
+
         return (is_numeric($rawValue))
             ? $this->handleUnchanged($rawValue, $this->fqn) :
             (!empty($rawValue['id'])

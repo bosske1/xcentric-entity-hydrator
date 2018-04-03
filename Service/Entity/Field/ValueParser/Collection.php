@@ -27,9 +27,10 @@ class Collection extends Embedded
                     : (!empty($dataRow['id']) ? $this->handleUpdatedEmbeddedEntity($dataRow, $this->fqn)
                         : $this->handleNewEmbeddedEntity($dataRow, $this->fqn));
 
-                $this->setOneToManyEntity($createdEmbeddedEntity);
-
-                $objects->add($createdEmbeddedEntity);
+                if ($createdEmbeddedEntity) {
+                    $this->setOneToManyEntity($createdEmbeddedEntity);
+                    $objects->add($createdEmbeddedEntity);
+                }
             }
         }
 

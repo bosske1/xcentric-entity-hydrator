@@ -17,15 +17,12 @@ class Collection extends Embedded
     public function parse($rawValue)
     {
         $objects = new ArrayCollection();
-        if (!$this->fqn) {
-            throw new MissingFqnException('Entity fqn is missing');
-        }
 
         if (!empty($rawValue)) {
             foreach ($rawValue as $dataRow) {
-                $createdEmbeddedEntity = is_numeric($dataRow) ? $this->handleUnchanged($dataRow, $this->fqn)
-                    : (!empty($dataRow['id']) ? $this->handleUpdatedEmbeddedEntity($dataRow, $this->fqn)
-                        : $this->handleNewEmbeddedEntity($dataRow, $this->fqn));
+                $createdEmbeddedEntity = is_numeric($dataRow) ? $this->handleUnchanged($dataRow, $dataRow['fqn'])
+                    : (!empty($dataRow['id']) ? $this->handleUpdatedEmbeddedEntity($dataRow, $dataRow['fqn'])
+                        : $this->handleNewEmbeddedEntity($dataRow, $dataRow['fqn']));
 
                 if ($createdEmbeddedEntity) {
                     $this->setOneToManyEntity($createdEmbeddedEntity);

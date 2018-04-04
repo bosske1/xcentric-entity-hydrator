@@ -20,9 +20,9 @@ class Collection extends Embedded
 
         if (!empty($rawValue)) {
             foreach ($rawValue as $dataRow) {
-                $createdEmbeddedEntity = is_numeric($dataRow) ? $this->handleUnchanged($dataRow, $dataRow['fqn'])
-                    : (!empty($dataRow['id']) ? $this->handleUpdatedEmbeddedEntity($dataRow, $dataRow['fqn'])
-                        : $this->handleNewEmbeddedEntity($dataRow, $dataRow['fqn']));
+                $createdEmbeddedEntity = is_numeric($dataRow) ? $this->handleUnchanged($dataRow, $this->getEntityFqn($dataRow))
+                    : (!empty($dataRow['id']) ? $this->handleUpdatedEmbeddedEntity($dataRow, $this->getEntityFqn($dataRow))
+                        : $this->handleNewEmbeddedEntity($dataRow, $this->getEntityFqn($dataRow)));
 
                 if ($createdEmbeddedEntity) {
                     $this->setOneToManyEntity($createdEmbeddedEntity);
@@ -46,5 +46,10 @@ class Collection extends Embedded
         if ($propertyName && method_exists($hydratableEntity, $setterMethod)) {
             $hydratableEntity->{$setterMethod}($this->entity);
         }
+    }
+
+    protected function getEntityFqn($dataRow): string
+    {
+        return (isset($dataRow['fqn'])) ? $dataRow['fqn'] : $this->fqn;
     }
 }

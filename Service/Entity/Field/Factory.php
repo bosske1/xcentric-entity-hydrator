@@ -63,7 +63,7 @@ class Factory implements FactoryInterface
 
         if ($manyToManyAnnotation) {
             // Same shit:
-            return $this->spawnByManyToOne($manyToManyAnnotation, $entity);
+            return $this->spawnByManyToMany($manyToManyAnnotation, $entity);
         }
 
 	    $oneToManyAnnotation = self::findAnnotation($propertyAnnotations, OneToMany::class);
@@ -130,19 +130,19 @@ class Factory implements FactoryInterface
     }
 
     /**
-     * @param Annotation $annotation
+     * @param ManyToOne $manyToOneAnnotation
      * @param HydratableEntityInterface $entity
      * @return null|ValueParserInterface
      */
-    private function spawnByManyToOne(Annotation $annotation, HydratableEntityInterface $entity): ?ValueParserInterface
+    private function spawnByManyToOne(ManyToOne $manyToOneAnnotation, HydratableEntityInterface $entity): ?ValueParserInterface
     {
         /**
          * @var ValueParserInterface $valueParser
          */
         $valueParser = $this->container->get(self::PARSER_PREFIX . 'embedded');
-        $valueParser->setFqn($annotation->targetEntity);
+        $valueParser->setFqn($manyToOneAnnotation->targetEntity);
         $valueParser->setEntity($entity);
-        $valueParser->setAnnotation($annotation);
+        $valueParser->setAnnotation($manyToOneAnnotation);
 
         return $valueParser;
     }
@@ -161,6 +161,24 @@ class Factory implements FactoryInterface
 	    $valueParser->setFqn($oneToManyAnnotation->targetEntity);
         $valueParser->setEntity($entity);
         $valueParser->setAnnotation($oneToManyAnnotation);
+
+	    return $valueParser;
+    }
+
+    /**
+     * @param ManyToMany $manyToManyAnnotation
+     * @param HydratableEntityInterface $entity
+     * @return null|ValueParserInterface
+     */
+    private function spawnByManyToMany(ManyToMany $manyToManyAnnotation, HydratableEntityInterface $entity): ?ValueParserInterface
+    {
+        /**
+         * @var ValueParserInterface $valueParser
+         */
+        $valueParser = $this->container->get(self::PARSER_PREFIX . 'collection');
+	    $valueParser->setFqn($manyToManyAnnotation->targetEntity);
+        $valueParser->setEntity($entity);
+        $valueParser->setAnnotation($manyToManyAnnotation);
 
 	    return $valueParser;
     }

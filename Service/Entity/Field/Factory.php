@@ -11,6 +11,14 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
+use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Boolean;
+use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Collection;
+use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Datetime;
+use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Double;
+use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Embedded;
+use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Generic;
+use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Integer;
+use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Unattached;
 
 /**
  * Class Factory
@@ -102,7 +110,7 @@ class Factory implements FactoryInterface
         /**
          * @var ValueParserInterface $valueParser
          */
-        $valueParser = $this->container->get(self::PARSER_PREFIX . 'unattached');
+        $valueParser = $this->container->get(Unattached::class);
         $valueParser->setEntity($entity);
 
         return $valueParser;
@@ -114,14 +122,29 @@ class Factory implements FactoryInterface
      */
     private function spawnByColumnAnnotation(Column $columnAnnotation, HydratableEntityInterface $entity): ?ValueParserInterface
     {
-
-        $parserClass = self::PARSER_PREFIX . $columnAnnotation->type;
-
         /**
          * @var ValueParserInterface $valueParser
          */
-        $valueParser = $this->container->has($parserClass) ? $this->container->get($parserClass)
-            : $this->container->get(self::PARSER_PREFIX . 'generic');
+        $valueParser = null;
+
+        switch ($columnAnnotation->type) {
+            case 'date':
+            case 'datetime':
+                $valueParser = $this->container->get(Datetime::class);
+                break;
+            case 'boolean':
+                $valueParser = $this->container->get(Boolean::class);
+                break;
+            case 'integer':
+                $valueParser = $this->container->get(Integer::class);
+                break;
+            case 'float':
+                $valueParser = $this->container->get(Double::class);
+                break;
+            case 'string':
+            default:
+                $valueParser = $this->container->get(Generic::class);
+        }
 
         $valueParser->setEntity($entity);
         $valueParser->setAnnotation($columnAnnotation);
@@ -139,7 +162,7 @@ class Factory implements FactoryInterface
         /**
          * @var ValueParserInterface $valueParser
          */
-        $valueParser = $this->container->get(self::PARSER_PREFIX . 'embedded');
+        $valueParser = $this->container->get(Embedded::class);
         $valueParser->setFqn($manyToOneAnnotation->targetEntity);
         $valueParser->setEntity($entity);
         $valueParser->setAnnotation($manyToOneAnnotation);
@@ -157,7 +180,7 @@ class Factory implements FactoryInterface
         /**
          * @var ValueParserInterface $valueParser
          */
-        $valueParser = $this->container->get(self::PARSER_PREFIX . 'collection');
+        $valueParser = $this->container->get(Collection::class);
 	    $valueParser->setFqn($oneToManyAnnotation->targetEntity);
         $valueParser->setEntity($entity);
         $valueParser->setAnnotation($oneToManyAnnotation);
@@ -175,7 +198,7 @@ class Factory implements FactoryInterface
         /**
          * @var ValueParserInterface $valueParser
          */
-        $valueParser = $this->container->get(self::PARSER_PREFIX . 'collection');
+        $valueParser = $this->container->get(Collection::class);
 	    $valueParser->setFqn($manyToManyAnnotation->targetEntity);
         $valueParser->setEntity($entity);
         $valueParser->setAnnotation($manyToManyAnnotation);

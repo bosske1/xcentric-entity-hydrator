@@ -1,43 +1,8 @@
 parameters:
 
 services:
-    xcentric.entity_hydrator.factory:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\Factory
-        arguments: ["@service_container"]
-
-    xcentric.entity_hydrator.hydrator:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Hydrator
-        arguments: ["@doctrine.orm.entity_manager.abstract", "@xcentric.entity_hydrator.factory"]
-
-    xcentric.entity_hydrator.parser.generic:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Generic
-
-    xcentric.entity_hydrator.parser.date:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Datetime
-
-    xcentric.entity_hydrator.parser.datetime:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Datetime
-
-    xcentric.entity_hydrator.parser.boolean:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Boolean
-
-    xcentric.entity_hydrator.parser.integer:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Integer
-
-    xcentric.entity_hydrator.parser.float:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Double
-
-    xcentric.entity_hydrator.parser.string:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Generic
-
-    xcentric.entity_hydrator.parser.embedded:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Embedded
-        arguments: ["@doctrine.orm.entity_manager.abstract", "@xcentric.entity_hydrator.hydrator"]
-
-    xcentric.entity_hydrator.parser.collection:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Collection
-        arguments: ["@doctrine.orm.entity_manager.abstract", "@xcentric.entity_hydrator.hydrator"]
-
-    xcentric.entity_hydrator.parser.unattached:
-        class: Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParser\Unattached
-        arguments: ["@doctrine.orm.entity_manager.abstract", "@xcentric.entity_hydrator.hydrator"]
+    Xcentric\EntityHydratorBundle\Service\:
+            resource: '../../Service'
+            public: true
+            autowire: true
+            shared: false

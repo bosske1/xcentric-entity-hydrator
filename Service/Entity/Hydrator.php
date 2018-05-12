@@ -185,26 +185,26 @@ class Hydrator implements HydratorInterface
             $collection = $entity->{$getterName}();
 
             if ($collection instanceof Collection) {
-                /**
-                 * @var HydratableEntityInterface $item
-                 */
+
+            	$idsNotToDelete = array();
+                /** @var HydratableEntityInterface $item */
                 foreach ($value as $item) {
-                    $matchingItems = $collection->filter(
-                        function ($entry) use ($item) {
-                            /**
-                             * @var HydratableEntityInterface $entry
-                             */
-                            return $entry->getId() === $item->getId();
-                        }
-                    );
+	                if (!$collection->contains($item)) {
+		                $collection->add($item);
+		                $idsNotToDelete[] = $item->getId();
+	                }
+                }
 
-                    if ($matchingItems->count() > 0) {
-                        foreach ($matchingItems as $matchingItem) {
-                            $collection->removeElement($matchingItem);
-                        }
-                    }
-
-                    $collection->add($item);
+                $entriesToDelete = $collection->filter(
+                	function ($entry) use ($idsNotToDelete) {
+                		/** @var HydratableEntityInterface $entry */
+                		return !in_array($entry->getId(), $idsNotToDelete);
+	                }
+                );
+                if ($entriesToDelete->count() > 0) {
+                	foreach ($entriesToDelete as $entry) {
+                		$this->entityManager->remove($entry);
+	                }
                 }
             }
         }

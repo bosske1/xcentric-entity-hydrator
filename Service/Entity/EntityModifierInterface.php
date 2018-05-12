@@ -23,4 +23,9 @@ interface EntityModifierInterface
      * @return bool
      */
     public function isApplicable(HydratableEntityInterface $entity, array $data): bool;
+
+    /**
+     * @return string
+     */
+    public function getModifierType(): string;
 }

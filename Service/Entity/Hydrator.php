@@ -7,6 +7,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
+use Xcentric\EntityHydratorBundle\Enum\ModifierType;
 use Xcentric\EntityHydratorBundle\Service\Entity\Field\FactoryInterface;
 use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParserInterface;
 
@@ -65,7 +66,7 @@ class Hydrator implements HydratorInterface
     {
         $reflectionClass = new \ReflectionClass($entity);
 
-        $this->runModifiers($entity, $data);
+        $this->runModifiers($entity, $data, ModifierType::PRE_HYDRATE);
 
         foreach ($data as $property => $rawValue) {
             if ($this->checkProperty($reflectionClass, $property)) {
@@ -75,6 +76,8 @@ class Hydrator implements HydratorInterface
                 $this->parseValue($reflectionClass, $property, $rawValue, $entity);
             }
         }
+
+        $this->runModifiers($entity, $data, ModifierType::POST_HYDRATE);
 
         return $entity;
     }
@@ -115,13 +118,13 @@ class Hydrator implements HydratorInterface
         return $this;
     }
 
-    private function runModifiers(HydratableEntityInterface $entity, array $data)
+    private function runModifiers(HydratableEntityInterface $entity, array $data, string $modifierType)
     {
         /**
          * @var EntityModifierInterface $entityModifier
          */
         foreach ($this->entityModifiers as $entityModifier) {
-            if ($entityModifier->isApplicable($entity, $data)) {
+            if ($entityModifier->isApplicable($entity, $data) && $entityModifier->getModifierType() === $modifierType) {
                 $entityModifier->modify($entity, $data);
             }
         }

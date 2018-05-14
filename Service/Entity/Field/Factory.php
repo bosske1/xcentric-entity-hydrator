@@ -37,15 +37,16 @@ class Factory implements FactoryInterface
      * @param \ReflectionClass $reflectionClass
      * @param HydratableEntityInterface $entity
      * @param string $propertyName
+     * @param $rawValue
      * @return null|ValueParserInterface
      * @throws \ReflectionException
      */
-    public function spawn(\ReflectionClass $reflectionClass, HydratableEntityInterface $entity, string $propertyName): ?ValueParserInterface
+    public function spawn(\ReflectionClass $reflectionClass, HydratableEntityInterface $entity, string $propertyName, $rawValue): ?ValueParserInterface
     {
         $propertyAnnotations = $this->getColumnAnnotations($reflectionClass, $propertyName);
 
         if (empty($propertyAnnotations)) {
-            return $this->spawnUnattached($entity);
+            return $this->resolveUnknown($rawValue, $entity);
         }
 
         $columnAnnotation = $this->findAnnotation($propertyAnnotations, Column::class);
@@ -92,6 +93,24 @@ class Factory implements FactoryInterface
         }
 
         return null;
+    }
+
+    /**
+     * @param $rawValue
+     * @param HydratableEntityInterface $entity
+     * @return ValueParserInterface
+     */
+    private function resolveUnknown($rawValue, HydratableEntityInterface $entity): ValueParserInterface
+    {
+        if (is_array($rawValue)) {
+            return $this->spawnUnattached($entity);
+        } else if (is_numeric($rawValue)) {
+            return $this->container->get(self::PARSER_PREFIX . 'generic');
+        } else if (is_bool($rawValue)) {
+            return $this->container->get(self::PARSER_PREFIX . 'boolean');
+        }
+
+        return $this->container->get(self::PARSER_PREFIX . 'generic');
     }
 
     /**

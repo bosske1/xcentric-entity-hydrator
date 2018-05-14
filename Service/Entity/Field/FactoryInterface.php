@@ -13,7 +13,8 @@ interface FactoryInterface
      * @param \ReflectionClass $reflectionClass
      * @param HydratableEntityInterface $entity
      * @param string $propertyName
+     * @param $rawValue
      * @return null|ValueParserInterface
      */
-    public function spawn(\ReflectionClass $reflectionClass, HydratableEntityInterface $entity, string $propertyName): ?ValueParserInterface;
+    public function spawn(\ReflectionClass $reflectionClass, HydratableEntityInterface $entity, string $propertyName, $rawValue): ?ValueParserInterface;
 }

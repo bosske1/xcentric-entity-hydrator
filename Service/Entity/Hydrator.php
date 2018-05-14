@@ -147,7 +147,7 @@ class Hydrator implements HydratorInterface
         /**
          * @var ValueParserInterface $valueParser
          */
-        $valueParser = $this->valueParserFactory->spawn($reflectionClass, $entity, $propertyName);
+        $valueParser = $this->valueParserFactory->spawn($reflectionClass, $entity, $propertyName, $rawValue);
 
         if ($valueParser) {
             return $valueParser->parse($rawValue);

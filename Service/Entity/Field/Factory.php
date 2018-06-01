@@ -19,6 +19,8 @@ use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
 class Factory implements FactoryInterface
 {
     const PARSER_PREFIX = 'xcentric.entity_hydrator.parser.';
+    const DATE_FORMAT = 'd.m.Y';
+
     /**
      * @var ContainerInterface $containerInterface
      */
@@ -108,6 +110,8 @@ class Factory implements FactoryInterface
             return $this->container->get(self::PARSER_PREFIX . 'generic');
         } else if (is_bool($rawValue)) {
             return $this->container->get(self::PARSER_PREFIX . 'boolean');
+        } else if ($this->guessDate($rawValue) !== false){
+            return $this->container->get(self::PARSER_PREFIX . 'datetime');
         }
 
         return $this->container->get(self::PARSER_PREFIX . 'generic');
@@ -218,5 +222,14 @@ class Factory implements FactoryInterface
         } catch (\ReflectionException $re) {
         }
         return array();
+    }
+
+    private function guessDate($value)
+    {
+        $date = \DateTime::createFromFormat(self::DATE_FORMAT, $value);
+        if ($date === false) {
+            $date = \DateTime::createFromFormat(\DateTime::ISO8601, $value);
+        }
+        return $date;
     }
 }

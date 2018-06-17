@@ -4,8 +4,10 @@ namespace Xcentric\EntityHydratorBundle\Service\Entity;
 
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\ORM\Mapping\Annotation;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
+use Xcentric\EntityHydratorBundle\Annotation\HydratorUpdateChildExcluded;
 use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
 use Xcentric\EntityHydratorBundle\Service\Entity\Field\FactoryInterface;
 use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParserInterface;
@@ -178,10 +180,12 @@ class Hydrator implements HydratorInterface
     {
         $getterName = 'get' . ucfirst($propertyName);
 
+        $annotations = $this->getColumnAnnotations($reflectionClass, $propertyName);
+
         if ($reflectionClass->hasMethod($getterName)) {
             $collection = $entity->{$getterName}();
 
-            if ($collection instanceof Collection) {
+            if ($collection instanceof Collection && !$this->findAnnotation($annotations, HydratorUpdateChildExcluded::class)) {
                 /**
                  * @var HydratableEntityInterface $item
                  */
@@ -203,6 +207,21 @@ class Hydrator implements HydratorInterface
 
                     $collection->add($item);
                 }
+            }elseif ($collection instanceof Collection){
+                foreach ($value as $item){
+                    $matchingItems = $collection->filter(
+                        function ($entry) use ($item) {
+                            /**
+                             * @var HydratableEntityInterface $entry
+                             */
+                            return $entry->getId() === $item->getId();
+                        }
+                    );
+
+                    if ($matchingItems->count() == 0) {
+                        $collection->add($item);
+                    }
+                }
             }
         }
     }
@@ -216,4 +235,40 @@ class Hydrator implements HydratorInterface
         return is_array($values) && (isset($values[Enum::ENTITY_FQN_FLAG]) || isset($values[0][Enum::ENTITY_FQN_FLAG]));
     }
 
+    /**
+     * @param \ReflectionClass $reflectionClass
+     * @param string $propertyName
+     * @return array
+     */
+    private function getColumnAnnotations(\ReflectionClass $reflectionClass, string $propertyName): array
+    {
+        try {
+            $annotationReader = new AnnotationReader();
+            $reflectionProperty = new \ReflectionProperty($reflectionClass->getName(), $propertyName);
+
+            return $annotationReader->getPropertyAnnotations($reflectionProperty);
+        } catch (AnnotationException $ae) {
+        } catch (\ReflectionException $re) {
+        }
+        return array();
+    }
+
+    /**
+     * @param array $propertyAnnotations
+     * @param string $annotationName
+     * @return mixed|null
+     * @throws \ReflectionException
+     */
+    private function findAnnotation(array $propertyAnnotations, string $annotationName)
+    {
+        foreach ($propertyAnnotations as $propertyAnnotation) {
+            $reflectionClass = new \ReflectionClass($propertyAnnotation);
+
+            if ($reflectionClass->getName() == $annotationName) {
+                return $propertyAnnotation;
+            }
+        }
+
+        return null;
+    }
 }

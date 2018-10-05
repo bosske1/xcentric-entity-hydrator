@@ -7,6 +7,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\Mapping\Annotation;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
+use Xcentric\EntityHydratorBundle\Annotation\HydratorClearCollection;
 use Xcentric\EntityHydratorBundle\Annotation\HydratorUpdateChildExcluded;
 use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
 use Xcentric\EntityHydratorBundle\Service\Entity\Field\FactoryInterface;
@@ -184,6 +185,10 @@ class Hydrator implements HydratorInterface
 
         if ($reflectionClass->hasMethod($getterName)) {
             $collection = $entity->{$getterName}();
+
+            if ($collection instanceof Collection && $this->findAnnotation($annotations, HydratorClearCollection::class)) {
+                $collection->clear();
+            }
 
             if ($collection instanceof Collection && !$this->findAnnotation($annotations, HydratorUpdateChildExcluded::class)) {
                 /**

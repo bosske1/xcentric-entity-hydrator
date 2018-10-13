@@ -7,9 +7,12 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\Mapping\Annotation;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Xcentric\EntityHydratorBundle\Annotation\HydratorClearCollection;
 use Xcentric\EntityHydratorBundle\Annotation\HydratorUpdateChildExcluded;
 use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
+use Xcentric\EntityHydratorBundle\Event\AfterHydrate;
+use Xcentric\EntityHydratorBundle\Event\BeforeHydrate;
 use Xcentric\EntityHydratorBundle\Service\Entity\Field\FactoryInterface;
 use Xcentric\EntityHydratorBundle\Service\Entity\Field\ValueParserInterface;
 
@@ -25,6 +28,11 @@ class Hydrator implements HydratorInterface
      * @var FactoryInterface $valueParserFactory
      */
     private $valueParserFactory;
+
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
 
     /**
      * @var array
@@ -52,10 +60,11 @@ class Hydrator implements HydratorInterface
      * @param EntityManagerInterface $entityManager
      * @param FactoryInterface $factory
      */
-    public function __construct(EntityManagerInterface $entityManager, FactoryInterface $factory)
+    public function __construct(EntityManagerInterface $entityManager, FactoryInterface $factory, EventDispatcherInterface $eventDispatcher)
     {
         $this->entityManager = $entityManager;
         $this->valueParserFactory = $factory;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -69,6 +78,9 @@ class Hydrator implements HydratorInterface
         $reflectionClass = new \ReflectionClass($entity);
 
         $this->runModifiers($entity, $data);
+        $beforeEvent = new BeforeHydrate();
+        $beforeEvent->setEntity($entity);
+        $this->eventDispatcher->dispatch('hydrator.before_hydrate', $beforeEvent);
 
         foreach ($data as $property => $rawValue) {
             if ($this->checkProperty($reflectionClass, $property)) {
@@ -78,6 +90,10 @@ class Hydrator implements HydratorInterface
                 $this->parseValue($reflectionClass, $property, $rawValue, $entity);
             }
         }
+
+        $afterEvent = new AfterHydrate();
+        $afterEvent->setEntity($entity);
+        $this->eventDispatcher->dispatch('hydrator.after_hydrate', $afterEvent);
 
         return $entity;
     }

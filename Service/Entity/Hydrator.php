@@ -79,6 +79,7 @@ class Hydrator implements HydratorInterface
 
         $this->runModifiers($entity, $data);
         $beforeEvent = new BeforeHydrate();
+        $beforeEvent->setData($data);
         $beforeEvent->setEntity($entity);
         $this->eventDispatcher->dispatch('hydrator.before_hydrate', $beforeEvent);
 
@@ -93,6 +94,7 @@ class Hydrator implements HydratorInterface
 
         $afterEvent = new AfterHydrate();
         $afterEvent->setEntity($entity);
+        $afterEvent->setData($data);
         $this->eventDispatcher->dispatch('hydrator.after_hydrate', $afterEvent);
 
         return $entity;

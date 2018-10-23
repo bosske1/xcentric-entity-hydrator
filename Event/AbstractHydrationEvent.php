@@ -17,6 +17,11 @@ class AbstractHydrationEvent extends Event
     protected $entity;
 
     /**
+     * @var array
+     */
+    protected $data;
+
+    /**
      * @return HydratableEntityInterface
      */
     public function getEntity(): HydratableEntityInterface
@@ -31,6 +36,24 @@ class AbstractHydrationEvent extends Event
     public function setEntity(HydratableEntityInterface $entity): AbstractHydrationEvent
     {
         $this->entity = $entity;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getData(): ?array
+    {
+        return $this->data;
+    }
+
+    /**
+     * @param array $data
+     * @return AbstractHydrationEvent
+     */
+    public function setData(?array $data): AbstractHydrationEvent
+    {
+        $this->data = $data;
         return $this;
     }
 }

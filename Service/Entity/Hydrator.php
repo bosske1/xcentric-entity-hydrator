@@ -218,7 +218,7 @@ class Hydrator implements HydratorInterface
                             /**
                              * @var HydratableEntityInterface $entry
                              */
-                            return $entry->getId() === $item->getId();
+                            return $entry->getId() && $entry->getId() === $item->getId();
                         }
                     );
 
@@ -237,7 +237,7 @@ class Hydrator implements HydratorInterface
                             /**
                              * @var HydratableEntityInterface $entry
                              */
-                            return $entry->getId() === $item->getId();
+                            return $entry->getId() && $entry->getId() === $item->getId();
                         }
                     );
 

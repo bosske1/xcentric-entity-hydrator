@@ -26,6 +26,7 @@ class Collection extends Embedded
 
                 if ($createdEmbeddedEntity) {
                     $this->setOneToManyEntity($createdEmbeddedEntity);
+                    $this->entityManager->persist($createdEmbeddedEntity);
                     $objects->add($createdEmbeddedEntity);
                 }
             }

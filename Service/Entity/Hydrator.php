@@ -4,6 +4,7 @@ namespace Xcentric\EntityHydratorBundle\Service\Entity;
 
 use Doctrine\Common\Annotations\AnnotationException;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\Annotation;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -229,6 +230,10 @@ class Hydrator implements HydratorInterface
                     }
 
                     $collection->add($item);
+                }
+                $setterName = 'set' . ucfirst($propertyName);
+                if ($reflectionClass->hasMethod($setterName)) {
+                    $entity->{$setterName}(new ArrayCollection($collection->getValues()));
                 }
             }elseif ($collection instanceof Collection){
                 foreach ($value as $item){

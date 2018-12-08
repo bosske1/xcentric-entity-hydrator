@@ -189,9 +189,9 @@ class Hydrator implements HydratorInterface
             	$idsNotToDelete = array();
                 /** @var HydratableEntityInterface $item */
                 foreach ($value as $item) {
+                    $idsNotToDelete[] = $item->getId();
 	                if (!$collection->contains($item)) {
 		                $collection->add($item);
-		                $idsNotToDelete[] = $item->getId();
 	                }
                 }
 

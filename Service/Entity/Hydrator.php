@@ -228,9 +228,17 @@ class Hydrator implements HydratorInterface
                         }
                     }
 
-                    $collection->add($item);
+                    $class = get_class($item);
+                    $parts = explode('\\', $class);
+                    $adderMethod = 'add' . array_pop($parts);
+
+                    if ($reflectionClass->hasMethod($adderMethod)) {
+                        $entity->{$adderMethod}($item);
+                    } else {
+                        $collection->add($item);
+                    }
                 }
-            }elseif ($collection instanceof Collection){
+            } elseif ($collection instanceof Collection) {
                 foreach ($value as $item){
                     $matchingItems = $collection->filter(
                         function ($entry) use ($item) {

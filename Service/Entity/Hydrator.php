@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Xcentric\EntityHydratorBundle\Annotation\HydratorClearCollection;
+use Xcentric\EntityHydratorBundle\Annotation\HydratorClearCollection;
 use Xcentric\EntityHydratorBundle\Annotation\HydratorUpdateChildExcluded;
 use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
 use Xcentric\EntityHydratorBundle\Event\AfterHydrate;

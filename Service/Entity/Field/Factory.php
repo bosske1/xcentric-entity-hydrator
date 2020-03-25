@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\OneToOne;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Xcentric\EntityHydratorBundle\Entity\HydratableEntityInterface;
 
@@ -57,11 +58,16 @@ class Factory implements FactoryInterface
             return $this->spawnByColumnAnnotation($columnAnnotation, $entity);
         }
 
+        $oneToOne = self::findAnnotation($propertyAnnotations, OneToOne::class);
         $manyToOneAnnotation = self::findAnnotation($propertyAnnotations, ManyToOne::class);
         $manyToManyAnnotation = self::findAnnotation($propertyAnnotations, ManyToMany::class);
 
         if ($manyToOneAnnotation) {
             return $this->spawnByManyToOne($manyToOneAnnotation, $entity);
+        }
+
+        if ($oneToOne) {
+            return $this->spawnByOneToOne($manyToOneAnnotation, $entity);
         }
 
         if ($manyToManyAnnotation) {
@@ -166,6 +172,24 @@ class Factory implements FactoryInterface
         $valueParser->setFqn($manyToOneAnnotation->targetEntity);
         $valueParser->setEntity($entity);
         $valueParser->setAnnotation($manyToOneAnnotation);
+
+        return $valueParser;
+    }
+
+    /**
+     * @param OneToOne $oneToOne
+     * @param HydratableEntityInterface $entity
+     * @return null|ValueParserInterface
+     */
+    private function spawnByOneToOne(OneToOne $oneToOne, HydratableEntityInterface $entity): ?ValueParserInterface
+    {
+        /**
+         * @var ValueParserInterface $valueParser
+         */
+        $valueParser = $this->container->get(self::PARSER_PREFIX . 'embedded');
+        $valueParser->setFqn($oneToOne->targetEntity);
+        $valueParser->setEntity($entity);
+        $valueParser->setAnnotation($oneToOne);
 
         return $valueParser;
     }

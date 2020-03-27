@@ -67,7 +67,7 @@ class Factory implements FactoryInterface
         }
 
         if ($oneToOne) {
-            return $this->spawnByOneToOne($manyToOneAnnotation, $entity);
+            return $this->spawnByOneToOne($oneToOne, $entity);
         }
 
         if ($manyToManyAnnotation) {
